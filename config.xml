@@ -7,7 +7,7 @@
     <version>
       <name>1.1.0</name>
       <suite>
-        <namespace-uri>http://cite.opengeospatial.org/wms/sld</namespace-uri>
+        <namespace-uri>http://www.opengis.net/sld</namespace-uri>
         <prefix>sld</prefix>
         <local-name>wms-sld</local-name>
         <title>WMS-SLD Conformance Test Suite</title>

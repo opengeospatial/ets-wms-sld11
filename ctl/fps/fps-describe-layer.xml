@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ctl:package
+<ctl:package 
 	xmlns:ctl="http://www.occamlab.com/ctl"
 	xmlns:parsers="http://www.occamlab.com/te/parsers"
 	xmlns:saxon="http://saxon.sf.net/"
@@ -12,7 +12,7 @@
   xmlns:wms="http://www.opengis.net/wms"
   xmlns:sld="http://www.opengis.net/sld"
   xmlns:se="http://www.opengis.net/se"
-	xmlns:fps="http://cite.opengeospatial.org/wms/fps">
+	xmlns:fps="http://www.opengis.net/wms/sld/fps">
 
   <ctl:test name="fps:DescribeLayer">
     <ctl:param name="fps-capabilities" />

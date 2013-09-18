@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ctl:package
+<ctl:package 
 	xmlns:ctl="http://www.occamlab.com/ctl"
 	xmlns:parsers="http://www.occamlab.com/te/parsers"
 	xmlns:saxon="http://saxon.sf.net/"
@@ -13,7 +13,7 @@
   xmlns:wms="http://www.opengis.net/wms"
   xmlns:ogc="http://www.opengis.net/ogc"
   xmlns:sld="http://www.opengis.net/sld"
-	xmlns:fps="http://cite.opengeospatial.org/wms/fps">
+	xmlns:fps="http://www.opengis.net/wms/sld/fps">
 
   <ctl:test name="fps:GetMap">
     <ctl:param name="fps-capabilities" />
@@ -76,7 +76,7 @@
         <xsl:text>&amp;remote_ows_type=WFS</xsl:text>
         <xsl:text>&amp;remote_ows_url=</xsl:text>
         <xsl:value-of select="encode-for-uri($remote-wfs)"/>
-        <xsl:text>&amp;sld=https%3A//svn.opengeospatial.org/ogc-projects/cite/scripts/wms/profiles/fps/1.1.0/trunk/ctl/sld/Styles-PrimitiveGeoFeature.xml</xsl:text>
+        <xsl:text>&amp;sld=https%3A//svn.opengeospatial.org/ogc-projects/cite/scripts/wms-sld/1.1.0/trunk/ctl/fps/sld/Styles-PrimitiveGeoFeature.xml</xsl:text>
         <xsl:text>&amp;version=1.3.0</xsl:text>
         <xsl:text>&amp;request=GetMap</xsl:text>
         <xsl:text>&amp;crs=</xsl:text>
@@ -269,7 +269,7 @@
           <ctl:param name="sld_version">1.1.0</ctl:param>
           <ctl:param name="sld">
             <xsl:value-of 
-            select="encode-for-uri('https://svn.opengeospatial.org/ogc-projects/cite/scripts/wms/profiles/fps/1.1.0/trunk/ctl/sld/Styles-PrimitiveGeoFeature.xml')"/>
+            select="encode-for-uri('https://svn.opengeospatial.org/ogc-projects/cite/scripts/wms-sld/1.1.0/trunk/ctl/fps/sld/Styles-PrimitiveGeoFeature.xml')"/>
           </ctl:param>
           <ctl:param name="remote_ows_type">WFS</ctl:param>
           <ctl:param name="remote_ows_url">

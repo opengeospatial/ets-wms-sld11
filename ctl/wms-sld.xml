@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ctl:package 
+<ctl:package
 	xmlns:ctl="http://www.occamlab.com/ctl"
 	xmlns:parsers="http://www.occamlab.com/te/parsers"
 	xmlns:saxon="http://saxon.sf.net/"
@@ -10,8 +10,8 @@
   xmlns:xlink="http://www.w3.org/1999/xlink"
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   xmlns:wms="http://www.opengis.net/wms"
-  xmlns:sld="http://cite.opengeospatial.org/wms/sld"
-	xmlns:fps="http://cite.opengeospatial.org/wms/sld/fps">
+  xmlns:sld="http://www.opengis.net/sld"
+	xmlns:fps="http://www.opengis.net/wms/sld/fps">
 
   <ctl:suite name="sld:wms-sld">
     <ctl:title>WMS-SLD Conformance Test Suite</ctl:title>
@@ -67,22 +67,17 @@
       </xsl:variable>
       <xsl:choose>
         <xsl:when test="not($iut-capabilities/wms:WMS_Capabilities)">
-          <ctl:message>[FAIL] Expected wms:WMS_Capabilities as document element.</ctl:message>
+          <ctl:message>[SKIP] Expected wms:WMS_Capabilities as document element.</ctl:message>
           <ctl:message>
           Document element is {<xsl:value-of select="namespace-uri($iut-capabilities/*[1])"/>}<xsl:value-of select="local-name($iut-capabilities/*[1])"/>
           </ctl:message>
-          <ctl:fail />
-        </xsl:when>
-        <xsl:when test="not(xs:boolean($iut-capabilities//sld:UserDefinedSymbolization/@RemoteWFS))">
-          <ctl:message>[SKIP] sld:UserDefinedSymbolization/@RemoteWFS is 'false'.</ctl:message>
-          <ctl:message>See OGC 05-078r4, cl. 7.3.</ctl:message>
           <ctl:skipped />
         </xsl:when>
         <xsl:when test="not(doc(concat($remote-wfs,'?request=GetCapabilities&amp;service=WFS&amp;version=1.1.0')))">
           <ctl:message>[SKIP] Remote WFS not available at <xsl:value-of select="$remote-wfs" /></ctl:message>
           <ctl:skipped />
         </xsl:when>
-        <xsl:otherwise>
+        <xsl:when test="xs:boolean($iut-capabilities//sld:UserDefinedSymbolization/@RemoteWFS)">
           <ctl:call-test name="fps:check-capabilities">
             <ctl:with-param name="fps-capabilities" select="$iut-capabilities" />
           </ctl:call-test>
@@ -100,6 +95,10 @@
               <ctl:with-param name="fps-capabilities" select="$iut-capabilities" />
             </ctl:call-test>
           </xsl:if>
+        </xsl:when>
+        <xsl:otherwise>
+          <ctl:message>[SKIP] Only FPS implementations are currently tested.</ctl:message>
+          <ctl:skipped />
         </xsl:otherwise>
       </xsl:choose>
     </ctl:code>
