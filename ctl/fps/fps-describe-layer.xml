@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ctl:package
+	xmlns:ctl="http://www.occamlab.com/ctl"
+	xmlns:parsers="http://www.occamlab.com/te/parsers"
+	xmlns:saxon="http://saxon.sf.net/"
+  xmlns:te="http://www.occamlab.com/te"
+	xmlns:tep="http://teamengine.sourceforge.net/parsers"
+	xmlns:xi="http://www.w3.org/2001/XInclude"
+	xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:xlink="http://www.w3.org/1999/xlink"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+  xmlns:wms="http://www.opengis.net/wms"
+  xmlns:sld="http://www.opengis.net/sld"
+  xmlns:se="http://www.opengis.net/se"
+	xmlns:fps="http://cite.opengeospatial.org/wms/fps">
+
+  <ctl:test name="fps:DescribeLayer">
+    <ctl:param name="fps-capabilities" />
+    <ctl:assertion>The DescribeLayer operation is correctly implemented (OGC 05-078r4, cl. 8).</ctl:assertion>
+    <ctl:comment>For FPS the layers presumably correspond to feature data in a default WFS.</ctl:comment>
+    <ctl:code>
+      <xsl:variable name="DescribeLayer.GET.url">
+        <ctl:call-function name="fps:get-endpoint">
+          <ctl:with-param name="fps-capabilities" select="$fps-capabilities"/>
+          <ctl:with-param name="opName" select="'DescribeLayer'" />
+          <ctl:with-param name="method" select="'Get'" />
+        </ctl:call-function>
+      </xsl:variable>
+      <xsl:variable name="DescribeLayer.POST.url">
+        <xsl:value-of select="$fps-capabilities//sld:DescribeLayer//wms:Post/wms:OnlineResource/@xlink:href"/>
+      </xsl:variable>
+      <xsl:if test="DescribeLayer.GET.url">
+        <ctl:call-test name="fps:DescribeLayer-GET-KnownLayer">
+          <ctl:with-param name="endpoint" select="$DescribeLayer.GET.url"/>
+          <ctl:with-param name="layer" select="($fps-capabilities//wms:Layer)[last()]/wms:Name"/>
+        </ctl:call-test>
+      </xsl:if>
+    </ctl:code>
+  </ctl:test>
+
+  <ctl:test name="fps:DescribeLayer-GET-KnownLayer">
+    <ctl:param name="endpoint" />
+    <ctl:param name="layer" />
+    <ctl:assertion>A valid DescribeLayer request for a known layer produces a valid response 
+    entity (sld:DescribeLayerResponse).</ctl:assertion>
+    <ctl:comment>See OGC 05-078r4: 8.2.1, 8.3</ctl:comment>
+    <ctl:code>
+      <xsl:variable name="rsp">
+        <request>
+          <url><xsl:value-of select="$endpoint"/></url>
+          <method>GET</method>
+          <param name="service">WMS</param>
+          <param name="version">1.3.0</param>
+          <param name="request">DescribeLayer</param>
+          <param name="sld_version">1.1.0</param>
+          <param name="layers">
+            <xsl:value-of select="$layer"/>
+          </param>
+        </request>
+      </xsl:variable>
+      <xsl:choose>
+        <xsl:when test="not($rsp//sld:DescribeLayerResponse)">
+          <ctl:message>[FAIL] sld:DescribeLayerResponse not found in response.</ctl:message>
+          <ctl:fail />
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:if test="$rsp//sld:LayerDescription[upper-case(sld:owsType) ne 'WFS']">
+            <ctl:message>[FAIL] Expected sld:LayerDescription/sld:owsType = 'WFS' (case-insensitive).</ctl:message>
+            <ctl:fail />
+          </xsl:if>
+          <xsl:if test="not($rsp//sld:LayerDescription/sld:TypeName/se:FeatureTypeName)">
+            <ctl:message>[FAIL] Expected LayerDescription to contain se:FeatureTypeName.</ctl:message>
+            <ctl:fail />
+          </xsl:if>
+        </xsl:otherwise>
+      </xsl:choose>
+    </ctl:code>
+  </ctl:test>
+</ctl:package>

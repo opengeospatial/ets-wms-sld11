@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<StyledLayerDescriptor version="1.1.0" 
+  xmlns="http://www.opengis.net/sld"
+  xmlns:se="http://www.opengis.net/se">
+  <se:Description>
+    <se:Abstract>Missing UserStyle.</se:Abstract>
+  </se:Description>
+  <UserLayer>
+    <se:Name>Building</se:Name>
+    <LayerFeatureConstraints>
+      <FeatureTypeConstraint xmlns:bldg="http://www.opengis.net/citygml/building/2.0">
+        <se:FeatureTypeName>bldg:Building</se:FeatureTypeName>
+      </FeatureTypeConstraint>
+    </LayerFeatureConstraints>
+  </UserLayer>
+</StyledLayerDescriptor>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<StyledLayerDescriptor version="1.1.0"
+  xmlns="http://www.opengis.net/sld"
+  xmlns:ogc="http://www.opengis.net/ogc"
+  xmlns:sf="http://cite.opengeospatial.org/gmlsf"
+  xmlns:se="http://www.opengis.net/se">
+
+  <se:Name>Styles-PrimitiveGeoFeature</se:Name>
+  <UserLayer>
+    <se:Name>PrimitiveGeoFeature</se:Name>
+    <UserStyle>
+      <se:Name>PrimitiveGeoFeature-point</se:Name>
+      <IsDefault>true</IsDefault>
+      <se:FeatureTypeStyle>
+        <se:FeatureTypeName>sf:PrimitiveGeoFeature</se:FeatureTypeName>
+        <se:Rule>
+          <se:Name>pointProperty</se:Name>
+          <se:PointSymbolizer>
+            <se:Name>Triangle-Red</se:Name>
+            <se:Geometry>
+              <ogc:PropertyName>sf:pointProperty</ogc:PropertyName>
+            </se:Geometry>
+            <se:Graphic>
+              <se:Mark>
+                <se:WellKnownName>triangle</se:WellKnownName>
+                <se:Fill>
+                  <se:SvgParameter name="fill">#FF0000</se:SvgParameter>
+                </se:Fill>
+              </se:Mark>
+              <se:Size>8.0</se:Size>
+            </se:Graphic>
+          </se:PointSymbolizer>
+        </se:Rule>
+      </se:FeatureTypeStyle>
+    </UserStyle>
+  </UserLayer>
+</StyledLayerDescriptor>

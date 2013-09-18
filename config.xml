@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Add this entry to TE_BASE/config.xml (//organization/standard) -->
+<organization>
+  <name>OGC</name>
+  <standard>
+    <name>WMS-SLD Profile</name>
+    <version>
+      <name>1.1.0</name>
+      <suite>
+        <namespace-uri>http://cite.opengeospatial.org/wms/sld</namespace-uri>
+        <prefix>sld</prefix>
+        <local-name>wms-sld</local-name>
+        <title>WMS-SLD Conformance Test Suite</title>
+        <description>Verifies conformance to the WMS-SLD profile (OGC 05-078r4).</description>
+      </suite>
+      <revision>
+        <name>r1</name>
+        <status>Beta</status>
+        <sources>
+          <source>wms-sld/1.1.0/ctl</source>
+        </sources>
+        <resources>wms-sld/1.1.0/resources</resources>
+        <webdir>wms-sld/1.1.0/web</webdir>
+      </revision>
+    </version>
+  </standard>
+</organization>

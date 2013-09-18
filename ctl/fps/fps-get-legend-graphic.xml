@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ctl:package
+	xmlns:ctl="http://www.occamlab.com/ctl"
+	xmlns:parsers="http://www.occamlab.com/te/parsers"
+	xmlns:saxon="http://saxon.sf.net/"
+  xmlns:te="http://www.occamlab.com/te"
+	xmlns:tep="http://teamengine.sourceforge.net/parsers"
+	xmlns:xi="http://www.w3.org/2001/XInclude"
+	xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:xlink="http://www.w3.org/1999/xlink"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+  xmlns:wms="http://www.opengis.net/wms"
+  xmlns:sld="http://www.opengis.net/sld"
+	xmlns:fps="http://cite.opengeospatial.org/wms/fps">
+
+  <ctl:test name="fps:GetLegendGraphic">
+    <ctl:param name="fps-capabilities" />
+    <ctl:assertion>The GetLegendGraphic operation is correctly implemented (OGC 05-078r4, cl. 10).</ctl:assertion>
+    <ctl:code>
+      <xsl:variable name="GetLegendGraphic.GET.url">
+        <ctl:call-function name="fps:get-endpoint">
+          <ctl:with-param name="fps-capabilities" select="$fps-capabilities"/>
+          <ctl:with-param name="opName" select="'GetLegendGraphic'" />
+          <ctl:with-param name="method" select="'Get'" />
+        </ctl:call-function>
+      </xsl:variable>
+      <xsl:variable name="GetLegendGraphic.POST.url">
+        <xsl:value-of select="$fps-capabilities//sld:GetLegendGraphic//wms:Post/wms:OnlineResource/@xlink:href"/>
+      </xsl:variable>
+      <ctl:message>[SKIPPED] No tests for GetLegendGraphic.</ctl:message>
+      <ctl:skipped />
+    </ctl:code>
+  </ctl:test>
+</ctl:package>
+

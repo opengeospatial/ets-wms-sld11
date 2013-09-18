@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ctl:package
+	xmlns:ctl="http://www.occamlab.com/ctl"
+	xmlns:parsers="http://www.occamlab.com/te/parsers"
+	xmlns:saxon="http://saxon.sf.net/"
+  xmlns:te="http://www.occamlab.com/te"
+	xmlns:tep="http://teamengine.sourceforge.net/parsers"
+	xmlns:xi="http://www.w3.org/2001/XInclude"
+	xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:htm="http://www.w3.org/1999/xhtml"
+  xmlns:xlink="http://www.w3.org/1999/xlink"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+  xmlns:wms="http://www.opengis.net/wms"
+  xmlns:ogc="http://www.opengis.net/ogc"
+  xmlns:sld="http://www.opengis.net/sld"
+	xmlns:fps="http://cite.opengeospatial.org/wms/fps">
+
+  <ctl:test name="fps:GetMap">
+    <ctl:param name="fps-capabilities" />
+    <ctl:param name="remote-wfs" />
+    <ctl:assertion>The GetMap operation is correctly implemented (OGC 05-078r4, cl. 9).</ctl:assertion>
+    <ctl:code>
+      <xsl:variable name="GetMap.GET.url">
+        <ctl:call-function name="fps:get-endpoint">
+          <ctl:with-param name="fps-capabilities" select="$fps-capabilities"/>
+          <ctl:with-param name="opName" select="'GetMap'" />
+          <ctl:with-param name="method" select="'Get'" />
+        </ctl:call-function>
+      </xsl:variable>
+      <xsl:variable name="GetMap.POST.url">
+        <xsl:value-of select="$fps-capabilities//wms:GetMap//wms:Post/wms:OnlineResource/@xlink:href"/>
+      </xsl:variable>
+      <xsl:variable name="GetMap.formats">
+        <xsl:copy-of select="$fps-capabilities//wms:GetMap/wms:Format"/>
+      </xsl:variable>
+      <ctl:call-test name="fps:GetMap-RemoteSLD">
+        <ctl:with-param name="endpoint" select="$GetMap.GET.url"/>
+        <ctl:with-param name="remote-wfs" select="$remote-wfs"/>
+        <ctl:with-param name="formats" select="$GetMap.formats"/>
+      </ctl:call-test>
+      <ctl:call-test name="fps:GetMap-InlineSLD">
+        <ctl:with-param name="endpoint" select="$GetMap.GET.url"/>
+        <ctl:with-param name="remote-wfs" select="$remote-wfs"/>
+        <ctl:with-param name="formats" select="$GetMap.formats"/>
+      </ctl:call-test>
+      <ctl:call-test name="fps:GetMap-SLDNotAvailable">
+        <ctl:with-param name="endpoint" select="$GetMap.GET.url"/>
+        <ctl:with-param name="remote-wfs" select="$remote-wfs"/>
+        <ctl:with-param name="formats" select="$GetMap.formats"/>
+      </ctl:call-test>
+      <ctl:call-test name="fps:GetMap-InvalidSLDBody">
+        <ctl:with-param name="endpoint" select="$GetMap.GET.url"/>
+        <ctl:with-param name="remote-wfs" select="$remote-wfs"/>
+        <ctl:with-param name="formats" select="$GetMap.formats"/>
+      </ctl:call-test>
+      <ctl:call-test name="fps:GetMap-NotWFSEndpoint">
+        <ctl:with-param name="endpoint" select="$GetMap.GET.url"/>
+        <ctl:with-param name="formats" select="$GetMap.formats"/>
+      </ctl:call-test>
+    </ctl:code>
+  </ctl:test>
+
+  <ctl:test name="fps:GetMap-RemoteSLD">
+    <ctl:param name="endpoint" />
+    <ctl:param name="remote-wfs" />
+    <ctl:param name="formats" />
+    <ctl:assertion>A GetMap request that refers to a remote SLD resource produces the expected image.</ctl:assertion>
+    <ctl:comment>No layers or styles are specified (identified in SLD). See OGC 05-078r4: 9.2.2.</ctl:comment>
+    <ctl:code>
+      <xsl:variable name="crs">
+        <xsl:value-of select="encode-for-uri('EPSG:4326')"/>
+      </xsl:variable>
+      <xsl:variable name="img.src">
+        <xsl:value-of select="$endpoint"/>
+        <xsl:text>?sld_version=1.1.0</xsl:text>
+        <xsl:text>&amp;remote_ows_type=WFS</xsl:text>
+        <xsl:text>&amp;remote_ows_url=</xsl:text>
+        <xsl:value-of select="encode-for-uri($remote-wfs)"/>
+        <xsl:text>&amp;sld=https%3A//svn.opengeospatial.org/ogc-projects/cite/scripts/wms/profiles/fps/1.1.0/trunk/ctl/sld/Styles-PrimitiveGeoFeature.xml</xsl:text>
+        <xsl:text>&amp;version=1.3.0</xsl:text>
+        <xsl:text>&amp;request=GetMap</xsl:text>
+        <xsl:text>&amp;crs=</xsl:text>
+        <xsl:value-of select="$crs" />
+        <xsl:text>&amp;bbox=44,29,47,32</xsl:text>
+        <xsl:text>&amp;width=160</xsl:text>
+        <xsl:text>&amp;height=160</xsl:text>
+        <xsl:text>&amp;format=</xsl:text>
+        <xsl:value-of select="string($formats[1])" />
+      </xsl:variable>
+      <xsl:variable name="form">
+        <ctl:form width="800" height="600">
+          <htm:img style="border:1px" src="{$img.src}" />
+          <htm:p>Does the image show areas with light blue fill and a dark blue border?</htm:p>
+          <htm:p>
+            <htm:input type="submit" name="Verdict" value="Yes" />
+            <htm:input type="submit" name="Verdict" value="No" />
+          </htm:p>
+        </ctl:form>
+      </xsl:variable>
+      <xsl:if test="not($form/values/value[@key='submit']='Yes')">
+        <ctl:message>FAIL: Unexpected image obtained from <xsl:value-of select="$img.src" /></ctl:message>
+        <ctl:message>It should display areas filled light blue with a dark blue border.</ctl:message>
+        <ctl:fail />
+      </xsl:if>
+    </ctl:code>
+  </ctl:test>
+
+  <ctl:test name="fps:GetMap-InlineSLD">
+    <?ctl-msg name="sld-inline" ?>
+    <ctl:param name="endpoint" />
+    <ctl:param name="remote-wfs" />
+    <ctl:param name="formats" />
+    <ctl:assertion>A GetMap request that refers to an inline SLD resource produces the expected image.</ctl:assertion>
+    <ctl:comment>No layers or styles are specified (identified in SLD). See OGC 05-078r4: 9.2.2.</ctl:comment>
+    <ctl:code>
+      <xsl:variable name="sld">
+        <xi:include href="./sld/SLD-PrimitiveGeoFeature-Point.xml"/>
+      </xsl:variable>
+      <xsl:variable name="crs">
+        <xsl:value-of select="encode-for-uri('EPSG:4326')"/>
+      </xsl:variable>
+      <xsl:variable name="img.src">
+        <xsl:value-of select="$endpoint"/>
+        <xsl:text>?sld_version=1.1.0</xsl:text>
+        <xsl:text>&amp;remote_ows_type=WFS</xsl:text>
+        <xsl:text>&amp;remote_ows_url=</xsl:text>
+        <xsl:value-of select="encode-for-uri($remote-wfs)"/>
+        <xsl:text>&amp;version=1.3.0</xsl:text>
+        <xsl:text>&amp;request=GetMap</xsl:text>
+        <xsl:text>&amp;crs=</xsl:text>
+        <xsl:value-of select="$crs" />
+        <xsl:text>&amp;bbox=34.0,-12.0,40.0,4.0</xsl:text>
+        <xsl:text>&amp;width=160</xsl:text>
+        <xsl:text>&amp;height=160</xsl:text>
+        <xsl:text>&amp;format=</xsl:text>
+        <xsl:value-of select="string($formats[1])" />
+        <xsl:text>&amp;sld_body=</xsl:text>
+        <xsl:value-of select="encode-for-uri(normalize-space(saxon:serialize($sld, 'sld-inline')))" />
+      </xsl:variable>
+      <xsl:variable name="form">
+        <ctl:form width="800" height="600">
+          <htm:img style="border:1px" src="{$img.src}" />
+          <htm:p>Does the image show red triangles?</htm:p>
+          <htm:p>
+            <htm:input type="submit" name="Verdict" value="Yes" />
+            <htm:input type="submit" name="Verdict" value="No" />
+          </htm:p>
+        </ctl:form>
+      </xsl:variable>
+      <xsl:if test="not($form/values/value[@key='submit']='Yes')">
+        <ctl:message>FAIL: Unexpected image obtained from <xsl:value-of select="$img.src" /></ctl:message>
+        <ctl:message>It should display red triangles indicating the locations of PrimitiveGeoFeature 
+        instances (having a gml:Point geometry).</ctl:message>
+        <ctl:fail />
+      </xsl:if>
+    </ctl:code>
+  </ctl:test>
+
+  <ctl:test name="fps:GetMap-SLDNotAvailable">
+    <ctl:param name="endpoint" />
+    <ctl:param name="remote-wfs" />
+    <ctl:param name="formats" />
+    <ctl:assertion>A GetMap request with an SLD parameter that refers to a missing resource produces 
+    an exception (@code = 'InvalidParameterValue').</ctl:assertion>
+    <ctl:comment>SLD profile defines no additional error codes for GetMap (9.3.1). See WMS exception 
+    codes in OGC 06-042 (ISO 19128), Table E.1.</ctl:comment>
+    <ctl:code>
+      <xsl:variable name="rsp">
+        <ctl:request>
+          <ctl:url><xsl:value-of select="$endpoint"/></ctl:url>
+          <ctl:method>GET</ctl:method>
+          <ctl:param name="version">1.3.0</ctl:param>
+          <ctl:param name="request">GetMap</ctl:param>
+          <ctl:param name="sld_version">1.1.0</ctl:param>
+          <ctl:param name="sld">
+            <xsl:value-of select="encode-for-uri('http://schemas.opengis.net/sld/1.1.0/NotFound.xml')"/>
+          </ctl:param>
+          <ctl:param name="remote_ows_type">WFS</ctl:param>
+          <ctl:param name="remote_ows_url"><xsl:value-of select="encode-for-uri($remote-wfs)"/></ctl:param>
+          <ctl:param name="crs"><xsl:value-of select="encode-for-uri('EPSG:4326')"/></ctl:param>
+          <ctl:param name="bbox">-160,-24,140,67</ctl:param>
+          <ctl:param name="width">128</ctl:param>
+          <ctl:param name="height">128</ctl:param>
+          <ctl:param name="format"><xsl:value-of select="$formats[last()]"/></ctl:param>
+          <parsers:HTTPParser />
+        </ctl:request>
+      </xsl:variable>
+      <xsl:if test="$rsp//status/@code != '400'">
+        <ctl:message>FAIL: Expected status code 400 (Bad Request).</ctl:message>
+        <ctl:message>Received <xsl:value-of select="$rsp//status/@code" /></ctl:message>
+        <ctl:fail />
+      </xsl:if>
+      <xsl:if test="not($rsp//ogc:ServiceException)">
+        <ctl:message>FAIL: Expected ogc:ServiceException in response.</ctl:message>
+        <ctl:message>Document element is <xsl:value-of select="name($rsp//content/*)" /></ctl:message>
+        <ctl:fail />
+      </xsl:if>
+      <xsl:if test="not($rsp//ogc:ServiceException/@code = 'InvalidParameterValue')">
+        <ctl:message>FAIL: Expected ogc:ServiceException with @code = 'InvalidParameterValue'.</ctl:message>
+        <ctl:fail />
+      </xsl:if>
+      <xsl:if test="not(matches($rsp//ogc:ServiceException/@locator,'sld','i'))">
+        <ctl:message>FAIL: Expected ogc:ServiceException with @locator containing 'sld' (case-insensitive).</ctl:message>
+        <ctl:fail />
+      </xsl:if>
+    </ctl:code>
+  </ctl:test>
+
+  <ctl:test name="fps:GetMap-InvalidSLDBody">
+    <?ctl-msg name="sld-inline" ?>
+    <ctl:param name="endpoint" />
+    <ctl:param name="remote-wfs" />
+    <ctl:param name="formats" />
+    <ctl:assertion>A GetMap request containing a schema-invalid SLD document (SLD_BODY) produces an exception.</ctl:assertion>
+    <ctl:comment>No applicable error code.</ctl:comment>
+    <ctl:code>
+      <xsl:variable name="sld">
+        <xi:include href="./sld/SLD-Invalid.xml"/>
+      </xsl:variable>
+      <xsl:variable name="rsp">
+        <ctl:request>
+          <ctl:url><xsl:value-of select="$endpoint"/></ctl:url>
+          <ctl:method>GET</ctl:method>
+          <ctl:param name="version">1.3.0</ctl:param>
+          <ctl:param name="request">GetMap</ctl:param>
+          <ctl:param name="sld_version">1.1.0</ctl:param>
+          <ctl:param name="sld_body">
+            <xsl:value-of select="encode-for-uri(normalize-space(saxon:serialize($sld, 'sld-inline')))" />
+          </ctl:param>
+          <ctl:param name="remote_ows_type">WFS</ctl:param>
+          <ctl:param name="remote_ows_url"><xsl:value-of select="encode-for-uri($remote-wfs)"/></ctl:param>
+          <ctl:param name="crs"><xsl:value-of select="encode-for-uri('EPSG:4326')"/></ctl:param>
+          <ctl:param name="bbox">-160,-24,140,67</ctl:param>
+          <ctl:param name="width">128</ctl:param>
+          <ctl:param name="height">128</ctl:param>
+          <ctl:param name="format"><xsl:value-of select="$formats[last()]"/></ctl:param>
+          <parsers:HTTPParser />
+        </ctl:request>
+      </xsl:variable>
+      <xsl:if test="$rsp//status/@code != '400'">
+        <ctl:message>FAIL: Expected status code 400 (Bad Request).</ctl:message>
+        <ctl:message>Received <xsl:value-of select="$rsp//status/@code" /></ctl:message>
+        <ctl:fail />
+      </xsl:if>
+      <xsl:if test="not($rsp//ogc:ServiceException)">
+        <ctl:message>FAIL: Expected ogc:ServiceException in response.</ctl:message>
+        <ctl:message>Document element is <xsl:value-of select="name($rsp//content/*)" /></ctl:message>
+        <ctl:fail />
+      </xsl:if>
+      <xsl:if test="not(matches($rsp//ogc:ServiceException/@locator,'sld_body','i'))">
+        <ctl:message>FAIL: Expected ogc:ServiceException with @locator containing 'sld_body' (case-insensitive).</ctl:message>
+        <ctl:fail />
+      </xsl:if>
+    </ctl:code>
+  </ctl:test>
+
+  <ctl:test name="fps:GetMap-NotWFSEndpoint">
+    <ctl:param name="endpoint" />
+    <ctl:param name="formats" />
+    <ctl:assertion>A GetMap request that supplies a REMOTE_OWS_URL value that is not a WFS endpoint produces an exception.</ctl:assertion>
+    <ctl:comment>No applicable error code.</ctl:comment>
+    <ctl:code>
+      <xsl:variable name="rsp">
+        <ctl:request>
+          <ctl:url><xsl:value-of select="$endpoint"/></ctl:url>
+          <ctl:method>GET</ctl:method>
+          <ctl:param name="version">1.3.0</ctl:param>
+          <ctl:param name="request">GetMap</ctl:param>
+          <ctl:param name="sld_version">1.1.0</ctl:param>
+          <ctl:param name="sld">
+            <xsl:value-of 
+            select="encode-for-uri('https://svn.opengeospatial.org/ogc-projects/cite/scripts/wms/profiles/fps/1.1.0/trunk/ctl/sld/Styles-PrimitiveGeoFeature.xml')"/>
+          </ctl:param>
+          <ctl:param name="remote_ows_type">WFS</ctl:param>
+          <ctl:param name="remote_ows_url">
+            <xsl:value-of select="encode-for-uri('http://validator.w3.org/')"/>
+          </ctl:param>
+          <ctl:param name="crs"><xsl:value-of select="encode-for-uri('EPSG:4326')"/></ctl:param>
+          <ctl:param name="bbox">-160,-24,140,67</ctl:param>
+          <ctl:param name="width">128</ctl:param>
+          <ctl:param name="height">128</ctl:param>
+          <ctl:param name="format"><xsl:value-of select="$formats[last()]"/></ctl:param>
+          <parsers:HTTPParser />
+        </ctl:request>
+      </xsl:variable>
+      <xsl:if test="$rsp//status/@code != '400'">
+        <ctl:message>FAIL: Expected status code 400 (Bad Request).</ctl:message>
+        <ctl:message>Received <xsl:value-of select="$rsp//status/@code" /></ctl:message>
+        <ctl:fail />
+      </xsl:if>
+      <xsl:if test="not($rsp//ogc:ServiceException)">
+        <ctl:message>FAIL: Expected ogc:ServiceException in response.</ctl:message>
+        <ctl:message>Document element is <xsl:value-of select="name($rsp//content/*)" /></ctl:message>
+        <ctl:fail />
+      </xsl:if>
+      <xsl:if test="not(matches($rsp//ogc:ServiceException/@locator,'remote_ows_url','i'))">
+        <ctl:message>FAIL: Expected ogc:ServiceException with @locator containing 'remote_ows_url' (case-insensitive).</ctl:message>
+        <ctl:fail />
+      </xsl:if>
+    </ctl:code>
+  </ctl:test>
+
+</ctl:package>

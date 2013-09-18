@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<StyledLayerDescriptor version="1.1.0"
+  xmlns="http://www.opengis.net/sld"
+  xmlns:ogc="http://www.opengis.net/ogc"
+  xmlns:sf="http://cite.opengeospatial.org/gmlsf"
+  xmlns:se="http://www.opengis.net/se">
+
+  <se:Name>Styles-PrimitiveGeoFeature</se:Name>
+  <se:Description>
+    <se:Abstract>Defines styles for feature types in WFS 1.1 test data set.</se:Abstract>
+  </se:Description>
+  <UserLayer>
+    <se:Name>PrimitiveGeoFeature</se:Name>
+    <!-- Remote WFS is specified in GetMap request (remote_ows_type, remote_ows_url) -->
+    <UserStyle>
+      <se:Name>surface</se:Name>
+      <IsDefault>true</IsDefault>
+      <se:FeatureTypeStyle>
+        <se:FeatureTypeName>sf:PrimitiveGeoFeature</se:FeatureTypeName>
+        <se:Rule>
+          <se:Name>surfaceProperty</se:Name>
+          <se:PolygonSymbolizer>
+            <se:Name>Fill-LightBlue|Stroke-DarkBlue</se:Name>
+            <se:Geometry>
+              <ogc:PropertyName>sf:surfaceProperty</ogc:PropertyName>
+            </se:Geometry>
+            <se:Fill>
+              <se:SvgParameter name="fill">#ADD8E6</se:SvgParameter>
+            </se:Fill>
+            <se:Stroke>
+              <se:SvgParameter name="stroke">#00008B</se:SvgParameter>
+            </se:Stroke>
+          </se:PolygonSymbolizer>
+        </se:Rule>
+      </se:FeatureTypeStyle>
+    </UserStyle>
+  </UserLayer>
+</StyledLayerDescriptor>

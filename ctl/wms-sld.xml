@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ctl:package 
+	xmlns:ctl="http://www.occamlab.com/ctl"
+	xmlns:parsers="http://www.occamlab.com/te/parsers"
+	xmlns:saxon="http://saxon.sf.net/"
+  xmlns:te="http://www.occamlab.com/te"
+	xmlns:tep="http://teamengine.sourceforge.net/parsers"
+	xmlns:xi="http://www.w3.org/2001/XInclude"
+	xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:xlink="http://www.w3.org/1999/xlink"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+  xmlns:wms="http://www.opengis.net/wms"
+  xmlns:sld="http://cite.opengeospatial.org/wms/sld"
+	xmlns:fps="http://cite.opengeospatial.org/wms/sld/fps">
+
+  <ctl:suite name="sld:wms-sld">
+    <ctl:title>WMS-SLD Conformance Test Suite</ctl:title>
+    <ctl:description>Verifies conformance to the WMS-SLD profile (OGC 05-078r4).</ctl:description>
+    <ctl:defaultResult>Pass</ctl:defaultResult>
+    <ctl:starting-test>sld:wms-sld-main</ctl:starting-test>
+  </ctl:suite>
+
+  <ctl:test name="sld:wms-sld-main">
+    <ctl:assertion>The IUT conforms to OGC 05-078r4.</ctl:assertion>
+    <ctl:code>
+      <xsl:variable name="form-data">
+        <ctl:form width="800" height="600">
+          <div xmlns="http://www.w3.org/1999/xhtml">
+            <h2>WMS-SLD Conformance Test Suite</h2>
+            <fieldset style="background:#CCFFFF">
+              <legend style="font-family: sans-serif; color: #000099; background-color:#F0F8FF; 
+          border-style: solid; padding:4px">Implementation Under Test (IUT)</legend>
+              <p>
+                <label for="uri">
+                  <h4 style="margin-bottom: 0.5em">Service description (WMS_Capabilities)</h4>
+                </label>
+                <input name="uri" size="96" type="text" value="http://" />
+              </p>
+              <p>
+                <label for="doc">
+                  <h4 style="margin-bottom: 0.5em">Upload service description</h4>
+                </label>
+                <input name="doc" size="96" type="file" />
+              </p>
+            </fieldset>
+            <p>
+              <input class="form-button" type="submit" value="Start"/> | 
+              <input class="form-button" type="reset" value="Clear"/>
+            </p>
+          </div>
+        </ctl:form>
+      </xsl:variable>
+      <xsl:variable name="iut-uri" select="$form-data//value[@key='uri']" />
+      <xsl:variable name="iut-file" select="$form-data//value[@key='doc']/ctl:file-entry" />
+      <xsl:variable name="remote-wfs" select="'http://cite.demo.opengeo.org:8080/geoserver_wfs11/wfs'"/>
+      <xsl:variable name="iut-capabilities">
+        <xsl:choose>
+          <xsl:when test="empty($iut-file/@full-path) and substring-after($iut-uri, 'http://')">
+            <ctl:request>
+              <ctl:url><xsl:value-of select="$iut-uri"/></ctl:url>
+            </ctl:request>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:copy-of select="doc(concat('file:///', $iut-file/@full-path))" />
+          </xsl:otherwise>
+        </xsl:choose>
+      </xsl:variable>
+      <xsl:choose>
+        <xsl:when test="not($iut-capabilities/wms:WMS_Capabilities)">
+          <ctl:message>[FAIL] Expected wms:WMS_Capabilities as document element.</ctl:message>
+          <ctl:message>
+          Document element is {<xsl:value-of select="namespace-uri($iut-capabilities/*[1])"/>}<xsl:value-of select="local-name($iut-capabilities/*[1])"/>
+          </ctl:message>
+          <ctl:fail />
+        </xsl:when>
+        <xsl:when test="not(xs:boolean($iut-capabilities//sld:UserDefinedSymbolization/@RemoteWFS))">
+          <ctl:message>[SKIP] sld:UserDefinedSymbolization/@RemoteWFS is 'false'.</ctl:message>
+          <ctl:message>See OGC 05-078r4, cl. 7.3.</ctl:message>
+          <ctl:skipped />
+        </xsl:when>
+        <xsl:when test="not(doc(concat($remote-wfs,'?request=GetCapabilities&amp;service=WFS&amp;version=1.1.0')))">
+          <ctl:message>[SKIP] Remote WFS not available at <xsl:value-of select="$remote-wfs" /></ctl:message>
+          <ctl:skipped />
+        </xsl:when>
+        <xsl:otherwise>
+          <ctl:call-test name="fps:check-capabilities">
+            <ctl:with-param name="fps-capabilities" select="$iut-capabilities" />
+          </ctl:call-test>
+          <ctl:call-test name="fps:GetMap">
+            <ctl:with-param name="fps-capabilities" select="$iut-capabilities" />
+            <ctl:with-param name="remote-wfs" select="$remote-wfs" />
+          </ctl:call-test>
+          <xsl:if test="$iut-capabilities//sld:DescribeLayer">				
+            <ctl:call-test name="fps:DescribeLayer">
+              <ctl:with-param name="fps-capabilities" select="$iut-capabilities" />
+            </ctl:call-test>
+          </xsl:if>
+          <xsl:if test="$iut-capabilities//sld:GetLegendGraphic">				
+            <ctl:call-test name="fps:GetLegendGraphic">
+              <ctl:with-param name="fps-capabilities" select="$iut-capabilities" />
+            </ctl:call-test>
+          </xsl:if>
+        </xsl:otherwise>
+      </xsl:choose>
+    </ctl:code>
+  </ctl:test>
+
+  <ctl:test name="fps:check-capabilities">
+    <ctl:param name="fps-capabilities" />
+    <ctl:assertion>The capabilities document describes a conforming FPS implementation (OGC 05-078r4, cl. 7.3).</ctl:assertion>
+    <ctl:code>
+      <xsl:if test="not(xs:boolean($fps-capabilities//sld:UserDefinedSymbolization/@SupportSLD))">
+        <ctl:message>[FAIL] sld:UserDefinedSymbolization/@SupportSLD is 'false'.</ctl:message>
+        <ctl:fail />
+      </xsl:if>
+      <xsl:if test="not(xs:boolean($fps-capabilities//sld:UserDefinedSymbolization/@UserLayer))">
+        <ctl:message>[FAIL] sld:UserDefinedSymbolization/@UserLayer is 'false'.</ctl:message>
+        <ctl:fail />
+      </xsl:if>
+      <xsl:if test="not(xs:boolean($fps-capabilities//sld:UserDefinedSymbolization/@UserStyle))">
+        <ctl:message>[FAIL] sld:UserDefinedSymbolization/@UserStyle is 'false'.</ctl:message>
+        <ctl:fail />
+      </xsl:if>
+    </ctl:code>
+  </ctl:test>
+
+  <ctl:function name="fps:get-endpoint">
+    <ctl:param name="fps-capabilities" />
+    <ctl:param name="opName" />
+    <ctl:param name="method" />
+    <ctl:description>Gets the endpoint for the given operation and method.</ctl:description>
+    <ctl:code>
+      <xsl:variable name="endpoint" as="xs:string">
+        <xsl:value-of 
+        select="saxon:evaluate(concat('$p1//wms:',$opName,'//wms:',$method,'/wms:OnlineResource/@xlink:href'), $fps-capabilities)"/>
+      </xsl:variable>
+      <xsl:choose>
+        <xsl:when test="ends-with($endpoint, '?')">
+          <xsl:value-of select="replace($endpoint,'\?','')"/>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:value-of select="$endpoint"/>
+        </xsl:otherwise>
+      </xsl:choose>
+    </ctl:code>
+  </ctl:function>
+
+  <xi:include href="./fps/fps-get-map.xml"/>
+  <xi:include href="./fps/fps-describe-layer.xml"/>
+  <xi:include href="./fps/fps-get-legend-graphic.xml"/>
+</ctl:package>
