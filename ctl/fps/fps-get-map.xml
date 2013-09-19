@@ -92,13 +92,13 @@
           <htm:img style="border:1px" src="{$img.src}" />
           <htm:p>Does the image show areas with light blue fill and a dark blue border?</htm:p>
           <htm:p>
-            <htm:input type="submit" name="Verdict" value="Yes" />
-            <htm:input type="submit" name="Verdict" value="No" />
+            <htm:input name="Verdict" type="submit" value="Yes" /> | 
+            <htm:input name="Verdict" type="submit" value="No" />
           </htm:p>
         </ctl:form>
       </xsl:variable>
-      <xsl:if test="not($form/values/value[@key='submit']='Yes')">
-        <ctl:message>FAIL: Unexpected image obtained from <xsl:value-of select="$img.src" /></ctl:message>
+      <xsl:if test="$form//value[@key='Verdict'] = 'No'">
+        <ctl:message>[FAIL] Unexpected image obtained from <xsl:value-of select="$img.src" /></ctl:message>
         <ctl:message>It should display areas filled light blue with a dark blue border.</ctl:message>
         <ctl:fail />
       </xsl:if>
@@ -142,13 +142,13 @@
           <htm:img style="border:1px" src="{$img.src}" />
           <htm:p>Does the image show red triangles?</htm:p>
           <htm:p>
-            <htm:input type="submit" name="Verdict" value="Yes" />
-            <htm:input type="submit" name="Verdict" value="No" />
+            <htm:input name="Verdict" type="submit" value="Yes" /> | 
+            <htm:input name="Verdict" type="submit" value="No" />
           </htm:p>
         </ctl:form>
       </xsl:variable>
-      <xsl:if test="not($form/values/value[@key='submit']='Yes')">
-        <ctl:message>FAIL: Unexpected image obtained from <xsl:value-of select="$img.src" /></ctl:message>
+      <xsl:if test="$form//value[@key='Verdict'] = 'No'">
+        <ctl:message>[FAIL] Unexpected image obtained from <xsl:value-of select="$img.src" /></ctl:message>
         <ctl:message>It should display red triangles indicating the locations of PrimitiveGeoFeature 
         instances (having a gml:Point geometry).</ctl:message>
         <ctl:fail />
