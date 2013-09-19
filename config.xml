@@ -3,7 +3,7 @@
 <organization>
   <name>OGC</name>
   <standard>
-    <name>WMS-SLD Profile</name>
+    <name>Web Map Service - SLD Profile (WMS-SLD)</name>
     <version>
       <name>1.1.0</name>
       <suite>
