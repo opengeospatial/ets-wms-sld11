@@ -1,9 +1,20 @@
 # OGC Web Map Service Style Layer Descriptor 1.1.0 Test-Suite
 
+A Feature Portrayal Service (FPS) is a specialized "component" WMS
+implementation that is able to portray feature data obtained from a remote
+WFS. It supports user-defined layers and styles and in general has no pre-
+defined layers; in this sense it is loosely coupled to any data sources. A
+conforming FPS implementation must satisfy the requirements of **Conformance
+Class C** in the SLD profile specification (OGC 05-078r4), plus all applicable
+requirements in other relevant specifications
+
 The OGC Web Map Service Style Layer Descriptor 1.1.0 Test-Suite provides the Executable Test Script (ETS) to test implementations against the following specification(s):
 
+  * [OGC-05-078r4] [Styled Layer Descriptor Profile, Version 1.1](http://portal.opengeospatial.org/files/?artifact_id=22364)
+  * [OGC-05-077r4] [Symbology Encoding Implementation Specification, Version 1.1](http://portal.opengeospatial.org/files/?artifact_id=22364)
+  * [OGC-06-042] [WMS 1.3 Implementation Specification](http://portal.opengeospatial.org/files/?artifact_id=22364) (ISO 19128:2005)
 
-Detailed information about this test suite is available [here]( http://htmlpreview.github.com/?https://github.com/opengeospatial/ets-wms-sld11/blob/master/src/main/web/index.html)
+Detailed information about this test suite is available [here]( http://htmlpreview.github.com/?https://github.com/opengeospatial/ets-wms-sld11/blob/master/src/main/web/index.html).
 
 ## License
 
